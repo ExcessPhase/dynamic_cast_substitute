@@ -1,28 +1,21 @@
-// dynamic_cast_substitute.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 template<typename>
-struct constant
-{
-};
-template<typename>
-struct writeable
+struct dummy
 {
 };
 template<typename T>
 struct dynamic_cast_interface
 {	virtual ~dynamic_cast_interface(void) = default;
-	virtual const T*getPtr(constant<T>&&) const
+	virtual const T*getPtr(const dummy<T>&) const
 	{	return nullptr;
 	}
-	virtual T*getPtr(writeable<T>&&)
+	virtual T*getPtr(const dummy<T>&)
 	{	return nullptr;
 	}
-	virtual const T&getReference(constant<T>&&) const
+	virtual const T&getReference(const dummy<T>&) const
 	{	throw std::bad_cast();
 	}
-	virtual T&getReference(writeable<T>&&)
+	virtual T&getReference(const dummy<T>&)
 	{	throw std::bad_cast();
 	}
 };
@@ -37,16 +30,17 @@ struct dynamic_cast_implementation:T
 	{
 	}
 	using dynamic_cast_interface<T>::getPtr;
-	virtual const T*getPtr(constant<T>&&) const override
+	using dynamic_cast_interface<T>::getReference;
+	virtual const T*getPtr(const dummy<T>&) const override
 	{	return this;
 	}
-	virtual T*getPtr(writeable<T>&&) override
+	virtual T*getPtr(const dummy<T>&) override
 	{	return this;
 	}
-	virtual const T&getReference(constant<T>&&) const override
+	virtual const T&getReference(const dummy<T>&) const override
 	{	return *this;
 	}
-	virtual T&getReference(writeable<T>&&) override
+	virtual T&getReference(const dummy<T>&) override
 	{	return *this;
 	}
 };
@@ -71,9 +65,9 @@ struct derive1:base
 int main()
 {
 	{	dynamic_cast_implementation<derive0> s0;
-		base *const p0 = &s0;
+		const base *const p0 = &s0;
 
-		if (auto p0D = p0->getPtr(writeable<derive0>()))
+		if (auto p0D = p0->getPtr(dummy<derive0>()))
 			std::cout << "p0 is a derive0!" << std::endl;
 		else
 			std::cout << "p0 is not a derive0!" << std::endl;
@@ -81,20 +75,9 @@ int main()
 	{
 		dynamic_cast_implementation<derive1> s1;
 		base *const p1 = &s1;
-		if (auto p1D = p1->getPtr(writeable<derive0>()))
+		if (auto p1D = p1->getPtr(dummy<derive0>()))
 			std::cout << "p1 is a derive0!" << std::endl;
 		else
 			std::cout << "p1 is not a derive0!" << std::endl;
 	}	
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

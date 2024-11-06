@@ -45,39 +45,39 @@ struct dynamic_cast_implementation:T
 	}
 };
 
-struct derive0;
-struct derive1;
+struct realConstant;
+struct integerConstant;
 
-struct base:dynamic_cast_interface<derive0>, dynamic_cast_interface<derive1>
-{	using dynamic_cast_interface<derive0>::getPtr;
-	using dynamic_cast_interface<derive1>::getPtr;
-	using dynamic_cast_interface<derive0>::getReference;
-	using dynamic_cast_interface<derive1>::getReference;
+struct expression:dynamic_cast_interface<realConstant>, dynamic_cast_interface<integerConstant>
+{	using dynamic_cast_interface<realConstant>::getPtr;
+	using dynamic_cast_interface<integerConstant>::getPtr;
+	using dynamic_cast_interface<realConstant>::getReference;
+	using dynamic_cast_interface<integerConstant>::getReference;
 };
 
 
-struct derive0:base
+struct realConstant:expression
 {
 };
-struct derive1:base
+struct integerConstant:expression
 {
 };
 int main()
 {
-	{	dynamic_cast_implementation<derive0> s0;
-		const base *const p0 = &s0;
+	{	dynamic_cast_implementation<realConstant> s0;
+		const expression *const p0 = &s0;
 
-		if (auto p0D = p0->getPtr(dummy<derive0>()))
-			std::cout << "p0 is a derive0!" << std::endl;
+		if (auto p0D = p0->getPtr(dummy<realConstant>()))
+			std::cout << "p0 is a realConstant!" << std::endl;
 		else
-			std::cout << "p0 is not a derive0!" << std::endl;
+			std::cout << "p0 is not a realConstant!" << std::endl;
 	}
 	{
-		dynamic_cast_implementation<derive1> s1;
-		base *const p1 = &s1;
-		if (auto p1D = p1->getPtr(dummy<derive0>()))
-			std::cout << "p1 is a derive0!" << std::endl;
+		dynamic_cast_implementation<integerConstant> s1;
+		expression *const p1 = &s1;
+		if (auto p1D = p1->getPtr(dummy<realConstant>()))
+			std::cout << "p1 is a realConstant!" << std::endl;
 		else
-			std::cout << "p1 is not a derive0!" << std::endl;
+			std::cout << "p1 is not a realConstant!" << std::endl;
 	}	
 }

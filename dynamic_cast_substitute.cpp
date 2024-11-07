@@ -22,6 +22,24 @@ struct dynamic_cast_interface
 
 
 template<typename T>
+T *dynCast(dynamic_cast_interface<T> *const _p)
+{	return _p->getPtr(dummy<T>());
+}
+template<typename T>
+const T *dynCast(const dynamic_cast_interface<T> *const _p)
+{	return _p->getPtr(dummy<T>());
+}
+template<typename T>
+T &dynCast(dynamic_cast_interface<T> &_r)
+{	return _r.getReference(dummy<T>());
+}
+template<typename T>
+const T &dynCast(const dynamic_cast_interface<T> &_r)
+{	return _r.getReference(dummy<T>());
+}
+
+
+template<typename T>
 struct dynamic_cast_implementation:T
 {	virtual ~dynamic_cast_implementation(void) = default;
 	template<typename ...ARGS>
@@ -29,8 +47,6 @@ struct dynamic_cast_implementation:T
 		:T(std::forward<ARGS>(_r)...)
 	{
 	}
-	using dynamic_cast_interface<T>::getPtr;
-	using dynamic_cast_interface<T>::getReference;
 	virtual const T*getPtr(const dummy<T>&) const override
 	{	return this;
 	}
@@ -49,10 +65,7 @@ struct realConstant;
 struct integerConstant;
 
 struct expression:dynamic_cast_interface<realConstant>, dynamic_cast_interface<integerConstant>
-{	using dynamic_cast_interface<realConstant>::getPtr;
-	using dynamic_cast_interface<integerConstant>::getPtr;
-	using dynamic_cast_interface<realConstant>::getReference;
-	using dynamic_cast_interface<integerConstant>::getReference;
+{
 };
 
 
@@ -67,7 +80,7 @@ int main()
 	{	dynamic_cast_implementation<realConstant> s0;
 		const expression *const p0 = &s0;
 
-		if (auto p0D = p0->getPtr(dummy<realConstant>()))
+		if (auto p0D = dynCast<realConstant>(p0))
 			std::cout << "p0 is a realConstant!" << std::endl;
 		else
 			std::cout << "p0 is not a realConstant!" << std::endl;
@@ -75,7 +88,7 @@ int main()
 	{
 		dynamic_cast_implementation<integerConstant> s1;
 		expression *const p1 = &s1;
-		if (auto p1D = p1->getPtr(dummy<realConstant>()))
+		if (auto p1D = dynCast<realConstant>(p1))
 			std::cout << "p1 is a realConstant!" << std::endl;
 		else
 			std::cout << "p1 is not a realConstant!" << std::endl;
